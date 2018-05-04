@@ -1,17 +1,17 @@
 <template>
   <div class="goods">
-    <div class="menu-wrapper">
+    <div class="menu-wrapper" ref="menuWrapper">
       <ul>
-        <li v-for="(item, index) in goods" :key="index" class="menu-item">
+        <li v-for="(item, index) in goods" :key="index" :class="{current: currentIndex===index}" @click="selectMenu(index, $event)" ref="menuList" class="menu-item">
           <span class="text">
             <span v-show="item.type>0" class="icon" :class="className[item.type]"></span>{{item.name}}
           </span>
         </li>
       </ul>
     </div>
-    <div class="foods-wrapper">
-      <ul>
-        <li v-for="(item, index) in goods" :key="index">
+    <div class="foods-wrapper" ref="foodsWrapper">
+      <ul class="content">
+        <li v-for="(item, index) in goods" :key="index" ref="foodList">
           <h1 class="title">{{item.name}}</h1>
           <ul>
             <li v-for="(food, index) in item.foods" :key="index" class="food-item">
@@ -29,36 +29,126 @@
                   <span class="now">￥{{food.price}}</span>
                   <span class="old" v-show="food.oldPrice">￥{{food.oldPrice}}</span>
                 </div>
+                <div class="cartcontrol-wrapper">
+                  <cartcontrol @add="addFood" :food="food"></cartcontrol>
+                </div>
               </div>
             </li>
           </ul>
         </li>
       </ul>
     </div>
+    <cart ref="cart" :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice" :select-foods="selectFoods"></cart>
   </div>
 </template>
 
 <script>
+  import BScroll from 'better-scroll'
+  import cart from 'components/cart/cart';
+  import cartcontrol from 'components/cartcontrol/cartcontrol';
+
   const ERR_OK = 0;
   export default {
-    props: ['seller'],
+    props: {
+      seller: Object,
+    },
     data() {
       return {
-        goods: {},
+        className: [],
+        goods: [],
+        listHeight: [],
+        scrollY: 0,
       }
+    },
+    computed: {
+      currentIndex() {
+        for (let i = 0; i < this.listHeight.length; i++) {
+          let height1 = this.listHeight[i];
+          let height2 = this.listHeight[i + 1];
+          if (!height2 || (this.scrollY >= height1 && this.scrollY < height2)) {
+            this._followScroll(i);
+            return i;
+          }
+        }
+        return 0;
+      },
+      selectFoods() {
+        let result = [];
+        this.goods.forEach((good) => {
+          good.foods.forEach((food) => {
+            if (food.count) {
+              result.push(food);
+            }
+          });
+        });
+        return result;
+      },
     },
     created() {
       this.className = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
-      this.$http.get('http://192.168.0.104:3000/api/goods').then((res) => {
+      this.$http.get('http://192.168.0.103:300/api/goods').then((res) => {
         let {body: resdata} = res;
         if (resdata.errnum === ERR_OK) {
           this.goods = resdata.data;
         }
+        this.$nextTick(() => {
+          this._initScroll();
+          this._calculateHeight();
+        })
       });
     },
-    methods: {},
-    computed: {},
-    components: {}
+    methods: {
+      selectMenu(index, event) {
+        if (!event._constructed) {
+          return;
+        }
+        let foodList = this.$refs.foodList;
+        let el = foodList[index];
+        this.foodsScroll.scrollToElement(el, 300);
+      },
+      _initScroll() {
+        this.menuScroll = new BScroll(this.$refs.menuWrapper, {
+          click: true,
+        });
+        this.foodsScroll = new BScroll(this.$refs.foodsWrapper, {
+          click: true,
+          probeType: 3,
+        });
+        this.foodsScroll.on('scroll', (pos) => {
+          // 判断滑动方向，避免下拉时分类高亮错误（如第一分类商品数量为1时，下拉使得第二分类高亮）
+          if (pos.y <= 0) {
+            this.scrollY = Math.abs(Math.round(pos.y));
+          }
+        })
+      },
+      _calculateHeight() {
+        let foodList = this.$refs.foodList;
+        let height = 0;
+        this.listHeight.push(height);
+        for (let i = 0; i < foodList.length; i++) {
+          height += foodList[i].clientHeight;
+          this.listHeight.push(height);
+        }
+      },
+      _followScroll(index) {
+        let menuList = this.$refs.menuList;
+        let el = menuList[index];
+        this.menuScroll.scrollToElement(el, 300, 0, -100);
+      },
+      addFood(target){
+        this._drop(target);
+      },
+      _drop(target){
+        /*体验优化，异步执行下落动画*/
+        this.$nextTick(()=> {
+          this.$refs.cart.drop(target);
+        })
+      }
+    },
+
+    components: {
+      cart, cartcontrol,
+    }
   }
 </script>
 
@@ -71,7 +161,7 @@
     top: 174px;
     bottom: 46px;
     width: 100%;
-    overflow: scroll;
+    overflow: hidden;
     .menu-wrapper {
       flex: 0 0 80px;
       width: 80px;
@@ -83,7 +173,9 @@
         padding: 0 12px;
         font-size: 0;
         background: #f3f5f7;
-
+        &.current {
+          background: #fff;
+        }
         .text {
           display: table-cell;
           vertical-align: middle;
@@ -176,12 +268,18 @@
               font-size: 14px;
               color: rgb(240, 20, 20);
             }
-            .old{
+            .old {
               text-decoration: line-through;
               font-size: 10px;
               color: rgb(147, 153, 159);
             }
           }
+          .cartcontrol {
+            position: absolute;
+            right: 0;
+            bottom: 12px;
+          }
+
         }
       }
     }

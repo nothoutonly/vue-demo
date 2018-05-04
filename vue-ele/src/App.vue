@@ -6,14 +6,14 @@
       <router-link to="/commit"><span>评论</span></router-link>
       <router-link to="/business"><span>商家</span></router-link>
     </div>
-    <router-view/>
-    <cart :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice"></cart>
+    <keep-alive>
+      <router-view :seller="seller"/>
+    </keep-alive>
   </div>
 </template>
 
 <script>
   import header from './components/header/header';
-  import cart from './components/cart/cart';
 
   const ERR_OK = 0;
   export default {
@@ -24,7 +24,7 @@
       }
     },
     created() {
-      this.$http.get('http://192.168.0.104:3000/api/seller').then((res) => {
+      this.$http.get('http://192.168.0.103:300/api/seller').then((res) => {
         let {body: resdata} = res;
         if (resdata.errnum === ERR_OK) {
           this.seller = resdata.data;
@@ -33,7 +33,6 @@
     },
     components: {
       'v-header': header,
-      cart,
     },
   }
 </script>
