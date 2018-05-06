@@ -5,8 +5,8 @@ import Resource from 'vue-resource'
 Vue.use(Router)
 
 import goods from 'components/goods/goods.vue'
-import commit from 'components/commit/commit.vue'
-import business from 'components/business/business.vue'
+import ratings from 'components/ratings/ratings.vue'
+import seller from 'components/seller/seller.vue'
 
 
 export default new Router({
@@ -14,8 +14,8 @@ export default new Router({
   routes: [
     {path: '/', redirect: "/goods"},
     {path: '/goods', component: goods},
-    {path: '/commit', component: commit},
-    {path: '/business', component: business},
+    {path: '/ratings', component: ratings},
+    {path: '/seller', component: seller},
 
   ]
 })

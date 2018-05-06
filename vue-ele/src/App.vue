@@ -3,8 +3,8 @@
     <v-header :seller="seller"></v-header>
     <div class="tab border-1px">
       <router-link to="/goods"><span>商品</span></router-link>
-      <router-link to="/commit"><span>评论</span></router-link>
-      <router-link to="/business"><span>商家</span></router-link>
+      <router-link to="/ratings"><span>评价</span></router-link>
+      <router-link to="/seller"><span>商家</span></router-link>
     </div>
     <keep-alive>
       <router-view :seller="seller"/>

@@ -14,7 +14,7 @@
         <li v-for="(item, index) in goods" :key="index" ref="foodList">
           <h1 class="title">{{item.name}}</h1>
           <ul>
-            <li v-for="(food, index) in item.foods" :key="index" class="food-item">
+            <li v-for="(food, index) in item.foods" :key="index" @click="selectFood(food, $event)" class="food-item">
               <div class="icon">
                 <img :src="food.icon" alt="">
               </div>
@@ -39,6 +39,7 @@
       </ul>
     </div>
     <cart ref="cart" :deliveryPrice="seller.deliveryPrice" :minPrice="seller.minPrice" :select-foods="selectFoods"></cart>
+    <food :food="selectedFood" ref="food" @add="addFood"></food>
   </div>
 </template>
 
@@ -46,6 +47,7 @@
   import BScroll from 'better-scroll'
   import cart from 'components/cart/cart';
   import cartcontrol from 'components/cartcontrol/cartcontrol';
+  import food from 'components/food/food'
 
   const ERR_OK = 0;
   export default {
@@ -58,6 +60,7 @@
         goods: [],
         listHeight: [],
         scrollY: 0,
+        selectedFood: {},
       }
     },
     computed: {
@@ -135,19 +138,26 @@
         let el = menuList[index];
         this.menuScroll.scrollToElement(el, 300, 0, -100);
       },
-      addFood(target){
+      addFood(target) {
         this._drop(target);
       },
-      _drop(target){
+      _drop(target) {
         /*体验优化，异步执行下落动画*/
-        this.$nextTick(()=> {
+        this.$nextTick(() => {
           this.$refs.cart.drop(target);
         })
-      }
+      },
+      selectFood(food, event) {
+        if (!event._constructed) {
+          return;
+        }
+        this.selectedFood = food;
+        this.$refs.food.show();
+      },
     },
 
     components: {
-      cart, cartcontrol,
+      cart, cartcontrol, food
     }
   }
 </script>
@@ -213,6 +223,7 @@
     .foods-wrapper {
       flex: 1;
       .title {
+        position: sticky;
         padding-left: 14px;
         height: 26px;
         line-height: 26px;
