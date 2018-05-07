@@ -89,7 +89,7 @@
     },
     created() {
       this.className = ['decrease', 'discount', 'special', 'invoice', 'guarantee'];
-      this.$http.get('http://192.168.0.103:300/api/goods').then((res) => {
+      this.$http.get('http://192.168.0.103:30/api/goods').then((res) => {
         let {body: resdata} = res;
         if (resdata.errnum === ERR_OK) {
           this.goods = resdata.data;

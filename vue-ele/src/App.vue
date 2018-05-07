@@ -24,7 +24,7 @@
       }
     },
     created() {
-      this.$http.get('http://192.168.0.103:300/api/seller').then((res) => {
+      this.$http.get('http://192.168.0.103:30/api/seller').then((res) => {
         let {body: resdata} = res;
         if (resdata.errnum === ERR_OK) {
           this.seller = resdata.data;

@@ -71,7 +71,7 @@
       }
     },
     created() {
-      this.$http.get('http://192.168.0.103:300/api/ratings').then((res) => {
+      this.$http.get('http://192.168.0.103:30/api/ratings').then((res) => {
         let {body: resdata} = res;
         if (resdata.errnum === ERR_OK) {
           this.ratings = resdata.data;

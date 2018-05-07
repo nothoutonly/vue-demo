@@ -33,6 +33,6 @@ apiRoutes.get('/ratings', (req, res)=>{
   })
 })
 app.use('/api', apiRoutes)
-app.listen(300)
+app.listen(30)
 
 
